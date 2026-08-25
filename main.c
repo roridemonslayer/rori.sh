@@ -26,7 +26,7 @@ int main() {
             command = strtok(NULL, " \n" );
         }
         argsv[i] = NULL; //this is the end of the argsv array
-        char *redirect_file = strtok(NULL, " \n");
+        char *redirect_file = strtok(NULL, " >");
         if (strcmp(argsv[0], "cd") == 0){ 
             chdir(argsv[1]); //this is the command to change directory
             continue; //this is the command to continue the loop and not run the rest of the code below it
