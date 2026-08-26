@@ -4,8 +4,10 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <signal.h>
 
 int main() {
+    signal(SIGINT, SIG_IGN);
     while(1){
         char input[100];
         printf("◆ ");
@@ -30,6 +32,9 @@ int main() {
             command = strtok(NULL, " \n");
         }
         argsv[i] = NULL;
+        if(argsv[0] == NULL){
+            continue;
+        }
 
         char *redirect_file = NULL;
         if (gt != NULL){
