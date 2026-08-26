@@ -3,47 +3,49 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 int main() {
-    //here we;re seeing upo our repl loop which is th e loop used for our shell 
-    while(1){ //this loops forever and its a true statemtn 1 = true
-        //reading part 
-        char input[100]; //this says the char max inout is 100 characters
-        printf("◆ "); //wehre users will type 
+    while(1){
+        char input[100];
+        printf("◆ ");
         fflush(stdout);
-        fgets(input, 100, stdin); //this gets the info from the keyboard. stdnin means read from the keyboard
+        fgets(input, 100, stdin);
 
         char *first_cmd = strtok(input, "|");
-        char *second_cmd = strtok(NULL, "|"); //this allows the prep 
+        char *second_cmd = strtok(NULL, "|");
 
-        char *command = strtok(first_cmd, " \n") ;// here we're storing the first word look isndie the inout adn give me the fiurst wordd u see b4 a new line 
-        char *argsv[10] ; //for wtv additional info you're passing in aside form ur maid so liek ls - la
+        char *argsv[10];
         int i = 0;
-        char *redirect = NULL;
+
         char *gt = strchr(first_cmd, '>');
-        if(gt != NULL){
+        if (gt != NULL){
             *gt = '\0';
-            
         }
 
-        while(command != NULL){ 
-            argsv[i] = command; 
-            i ++ ;
-            command = strtok(NULL, " \n" );
+        char *command = strtok(first_cmd, " \n");
+        while(command != NULL){
+            argsv[i] = command;
+            i++;
+            command = strtok(NULL, " \n");
         }
-        argsv[i] = NULL; //this is the end of the argsv array
-        char *redirect_file = strtok(NULL, " >");
-        if (strcmp(argsv[0], "cd") == 0){ 
-            chdir(argsv[1]); //this is the command to change directory
-            continue; //this is the command to continue the loop and not run the rest of the code below it
+        argsv[i] = NULL;
 
+        char *redirect_file = NULL;
+        if (gt != NULL){
+            redirect_file = gt + 1;
+            redirect_file = strtok(redirect_file, " \n");
         }
-        if( strcmp(argsv[0], "exit") == 0){
+
+        if (strcmp(argsv[0], "cd") == 0){
+            chdir(argsv[1]);
+            continue;
+        }
+        if(strcmp(argsv[0], "exit") == 0){
             exit(0);
         }
 
         if (second_cmd != NULL){
-            // PIPED CASE: two commands, needs the pipe, two forks, close both ends in parent, wait twice
             int fd[2];
             pipe(fd);
 
@@ -78,14 +80,17 @@ int main() {
             wait(NULL);
 
         } else {
-            // NON-PIPED CASE: just one command, no pipe at all, single fork, single wait
             pid_t pid = fork();
             if (pid == 0){
+                if (redirect_file != NULL){
+                    int fd_out = open(redirect_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                    dup2(fd_out, STDOUT_FILENO);
+                    close(fd_out);
+                }
                 execvp(argsv[0], argsv);
             } else {
                 wait(NULL);
             }
         }
-
     }
 }
