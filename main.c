@@ -19,6 +19,12 @@ int main() {
         char *command = strtok(first_cmd, " \n") ;// here we're storing the first word look isndie the inout adn give me the fiurst wordd u see b4 a new line 
         char *argsv[10] ; //for wtv additional info you're passing in aside form ur maid so liek ls - la
         int i = 0;
+        char *redirect = NULL;
+        char *gt = strchr(first_cmd, '>');
+        if(gt != NULL){
+            *gt = '\0';
+            
+        }
 
         while(command != NULL){ 
             argsv[i] = command; 
